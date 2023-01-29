@@ -28,6 +28,9 @@ def upload(result: List[dict], s3, s3_target: str):
     # NOTE: example location to store the images
     with s3.open(f"{s3_target}/metadata.json", "w") as meta_f:
         json.dump(result, meta_f)
+        
+    for image in result:
+        s3.put(f'{DATA_FOLDER}/{image["image_id"]}.jpg', f'{s3_target}/images/{image["image_id"]}.jpg')
 
 
 def run_augmentations(aug_conf: dict, result: List[dict], s3, s3_target: str):
