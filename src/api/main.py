@@ -15,6 +15,9 @@ async def upload_images(data: models.FilterProductsModel):
     """
     TODO: use a celery task(s) to query the database and upload the results to S3
     """
+    
+    task = tasks.send_task(name="filter", kwargs=data.dict(), queue="imagery")
+    return {"task_id": task.id}
 
 
 @app.post("/predict", status_code=201)
