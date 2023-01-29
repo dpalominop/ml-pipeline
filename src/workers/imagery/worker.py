@@ -9,8 +9,8 @@ from celery.exceptions import Ignore
 from celery.utils.log import get_logger
 
 from app.database import filter_products
-from app.augmentation import Transformer
-from app.uploader import Uploader
+# from app.augmentation import Transformer
+# from app.uploader import Uploader
 
 BUCKET_NAME = os.getenv("BUCKET_NAME", "")
 DATA_FOLDER = os.getenv("DATA_FOLDER", "")
@@ -50,5 +50,9 @@ def filter_task(self, **kwargs) -> Dict[str, Any]:
     # NOTE: example for handling files in S3
     s3_target = f"s3://{BUCKET_NAME}/{self.request.id}"
     s3 = s3fs.S3FileSystem(client_kwargs={"endpoint_url": f"http://{S3_HOST}:4566"})
+    
+    products = filter_products(data_dict=kwargs)
+    
+    upload(result=products, s3=s3, s3_target=s3_target)
 
     return {"s3_target": s3_target}
