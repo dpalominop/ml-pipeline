@@ -2,7 +2,7 @@ import os
 from typing import List, Any
 
 import sqlalchemy
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, and_
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 
@@ -23,8 +23,18 @@ Products = sqlalchemy.Table(
 )
 engine = create_engine(DATABASE_URL)
 
-
 def filter_products(data_dict: dict) -> List[Any]:
     """
     TODO: run sql query here
     """
+    
+    with engine.begin() as connection:
+        query = Products.select().where(
+            and_(Products.c.gender == data_dict["gender"],
+            Products.c.sub_category == data_dict["sub_category"],
+            Products.c.year >= data_dict["start_year"])
+        ).order_by(Products.c.year).limit(data_dict["limit"])
+
+        products = connection.execute(query)
+
+    return [dict(row) for row in products]
