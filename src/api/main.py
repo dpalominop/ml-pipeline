@@ -25,6 +25,9 @@ async def predict_images(data: models.InferenceModel):
     """
     TODO: use a celery task(s) to run inference on images
     """
+    task = tasks.send_task(name="model", kwargs=data.dict(), queue="inference")
+    return {"task_id": task.id}
+
 
 @app.get("/task/{task_id}", status_code=200)
 def get_task_result(task_id: str):
