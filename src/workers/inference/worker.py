@@ -10,10 +10,9 @@ from celery.utils.log import get_logger
 import torch
 from torch.utils.data import DataLoader
 
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
-
 from utils.dataset import ImagesDataset
+from utils.evaluation import set_val_model, val_transform
+
 from model.deepfashion import FashionNetVgg16NoBn
 
 
@@ -22,19 +21,8 @@ inference = Celery(
     "inference", broker=os.getenv("BROKER_URL"), backend=os.getenv("REDIS_URL")
 )
 
-model = FashionNetVgg16NoBn()
+model = set_val_model(model=FashionNetVgg16NoBn())
 
-# pose network needs to be trained from scratch? i guess?
-for k in model.state_dict().keys():
-    if 'conv5_pose' in k and 'weight' in k:
-        torch.nn.init.xavier_normal_(model.state_dict()[k])
-        print('filling xavier {}'.format(k))
-
-for k in model.state_dict().keys():
-    if 'conv5_global' in k and 'weight' in k:
-        torch.nn.init.xavier_normal_(model.state_dict()[k])
-        print('filling xavier {}'.format(k))
-model.eval()
 
 @inference.task(bind=True, name="model")
 def inference_task(self, **kwargs) -> Dict[str, Any]:
@@ -55,10 +43,7 @@ def inference_task(self, **kwargs) -> Dict[str, Any]:
     # Download the directory
     s3.get(f"{s3_target}/images", tmpdir, recursive=True)
 
-    val_transform = A.Compose(
-        [A.Resize(224, 224), A.Normalize(mean=(0.485, 0.456, 0.406), 
-        std=(0.229, 0.224, 0.225)), ToTensorV2()]
-    )
+    
     dataset = ImagesDataset(images=os.listdir(tmpdir), 
                             images_folder=tmpdir, 
                             transforms=val_transform,
