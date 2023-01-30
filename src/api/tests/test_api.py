@@ -1,7 +1,7 @@
 """ Unit tests for the API """
 
 def test_filter_api(client):
-    """ Unit test to check filter endpoint."""
+    """Unit test to check filter endpoint."""
     payload = {
         "gender": "Men", 
         "sub_category": "Shoes", 
@@ -14,7 +14,7 @@ def test_filter_api(client):
     assert "task_id" in response.json()
     
 def test_filter_aug_api(client):
-    """ Unit test to check filter endpoint with augmentation."""
+    """Unit test to check filter endpoint with augmentation."""
     payload = {
         "gender": "Men", 
         "sub_category": "Shoes", 
@@ -31,7 +31,7 @@ def test_filter_aug_api(client):
     assert "task_id" in response.json()
 
 def test_predict_api(client):
-    """ Unit test to check predict endpoint."""
+    """Unit test to check predict endpoint."""
     payload = {"s3_target": "s3_target"}
     response = client.post("/predict", json=payload)
 
@@ -39,6 +39,7 @@ def test_predict_api(client):
     assert "task_id" in response.json()
 
 def test_get_task_result(client):
+    """Unit test to check task endpoint."""
     task_id = "fake_task_id"
     response = client.get(f"/task/{task_id}")
     assert response.status_code == 200
