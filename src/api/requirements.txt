@@ -7,3 +7,4 @@ requests>=2.28.1
 # Import lib regression
 # See https://github.com/python/importlib_metadata/issues/411.
 importlib-metadata==4.13.0
+httpx==0.23.3
