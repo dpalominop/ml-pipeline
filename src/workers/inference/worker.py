@@ -27,11 +27,17 @@ model = set_val_model(model=FashionNetVgg16NoBn())
 @inference.task(bind=True, name="model")
 def inference_task(self, **kwargs) -> Dict[str, Any]:
     """
-    TODO: run inference here
+    Run inference task based on input parameters.
+    
+    Args:
+        kwargs: Input parameter (e.g.: s3_target)
+    
+    Return:
+        dict: Dictionary including s3_target and s3 path of predictions.
     """
     logger.info(f"Start executing task {kwargs}")
     
-    # NOTE: example location to store results
+    # Setting S3 path and handle
     s3_target = self.request.kwargs["s3_target"]
     s3 = s3fs.S3FileSystem(
         client_kwargs={"endpoint_url": f'http://{os.getenv("S3_HOST")}:4566'}
@@ -39,11 +45,10 @@ def inference_task(self, **kwargs) -> Dict[str, Any]:
 
     # Create a temporary directory
     tmpdir = tempfile.mkdtemp()
-
     # Download the directory
     s3.get(f"{s3_target}/images", tmpdir, recursive=True)
 
-    
+    # Loading the dataset
     dataset = ImagesDataset(images=os.listdir(tmpdir), 
                             images_folder=tmpdir, 
                             transforms=val_transform,
@@ -62,7 +67,8 @@ def inference_task(self, **kwargs) -> Dict[str, Any]:
             result = [{"massive_attr": feat, "categories": cat} for feat, cat in zip(features, logits)]
             results.extend(result)
 
+    # Saving predictions
     with s3.open(f"{s3_target}/predictions.json", "w") as dump_f:
         json.dump(results, dump_f)
 
-    return {"s3_target": s3_target}
+    return {"s3_target": s3_target, "predictions": f"{s3_target}/predictions.json"}

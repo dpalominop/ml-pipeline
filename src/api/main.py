@@ -13,9 +13,12 @@ tasks = Celery(broker=os.getenv("BROKER_URL"), backend=os.getenv("REDIS_URL"))
 @app.post("/filter", status_code=201)
 async def upload_images(data: models.FilterProductsModel):
     """
-    TODO: use a celery task(s) to query the database and upload the results to S3
+    Endpoint to query the database and upload the results to S3.
+    Args:
+        data (models.FilterProductsModel): Input parameters.
+    Return:
+        str: Id of task.
     """
-    
     task = tasks.send_task(name="filter", kwargs=data.dict(), queue="imagery")
     return {"task_id": task.id}
 
@@ -23,7 +26,11 @@ async def upload_images(data: models.FilterProductsModel):
 @app.post("/predict", status_code=201)
 async def predict_images(data: models.InferenceModel):
     """
-    TODO: use a celery task(s) to run inference on images
+    Endpoint to run inference task on images.
+    Args:
+        data (models.InferenceModel): Input parameters.
+    Return:
+        str: Id of task.
     """
     task = tasks.send_task(name="model", kwargs=data.dict(), queue="inference")
     return {"task_id": task.id}
@@ -32,7 +39,11 @@ async def predict_images(data: models.InferenceModel):
 @app.get("/task/{task_id}", status_code=200)
 def get_task_result(task_id: str):
     """
-    Use this endpoint to check the status of a task
+    Endpoint to check the status of a task.
+    Args:
+        task_id (str): Id of task.
+    Return:
+        JSONResponse: TaskResult in json format.
     """
     result = tasks.AsyncResult(task_id)
 

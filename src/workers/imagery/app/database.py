@@ -25,16 +25,20 @@ engine = create_engine(DATABASE_URL)
 
 def filter_products(data_dict: dict) -> List[Any]:
     """
-    TODO: run sql query here
+    Filter products based on sql query.
+    Args:
+        data_dict (dict): Input parameters to generate the sql query.
+    Return:
+        List[dict]: List of dictionaries of filtered products.
     """
-    
     with engine.begin() as connection:
+        # query to filter products
         query = Products.select().where(
             and_(Products.c.gender == data_dict["gender"],
             Products.c.sub_category == data_dict["sub_category"],
             Products.c.year >= data_dict["start_year"])
         ).order_by(Products.c.year).limit(data_dict["limit"])
-
+        # executing query
         products = connection.execute(query)
 
     return [dict(row) for row in products]
