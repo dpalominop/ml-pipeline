@@ -14,7 +14,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/* /var/tmp/*
 
 ADD utils $APP_DIR/utils
-ADD pytorch-deepfashion $APP_DIR/pytorch-deepfashion
 ADD worker.py $APP_DIR/
 
 EXPOSE 6379 5672
